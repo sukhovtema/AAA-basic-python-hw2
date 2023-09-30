@@ -1,4 +1,5 @@
 import csv
+from collections import defaultdict
 
 
 def print_dept_teams_hierarchy(dept_teams_hierarchy: dict) -> None:
@@ -16,22 +17,22 @@ def print_dept_teams_hierarchy(dept_teams_hierarchy: dict) -> None:
             print(f'\t{dept_team}')
 
 
-def print_dept_sal_stats(dept_sal_stats: dict) -> None:
+def print_dept_stats(dept_stats: dict) -> None:
     """
-    Print salary statistics for each department from a salary statistics for each department dict.
+    Print salary statistics for each department from a department-salary statistics dict.
 
     Args:
-        dept_sal_stats (dict): A dictionary representing the salary statistics for each department.
+        dept_stats (dict): A dictionary representing the salary statistics for each department.
     """
     print('----Salary stats for each department----')
 
-    for dept in dept_sal_stats:
-        dept_sal_arr = [int(sal) for sal in dept_sal_stats[dept]]
+    for dept in dept_stats:
+        dept_salaries = [float(sal) for sal in dept_stats[dept]]
         print(
             f'{dept}\n'
-            f'\tMAX_SAL = {max(dept_sal_arr)}\n'
-            f'\tMIN_SAL = {min(dept_sal_arr)}\n'
-            f'\tAVG_SAL = {sum(dept_sal_arr) / len(dept_sal_arr):.2f}'
+            f'\tWorkers number = {len(dept_salaries)}\n'
+            f'\tAverage salary = {sum(dept_salaries) / len(dept_salaries):.2f} '
+            f'({min(dept_salaries)} — {max(dept_salaries)})'
         )
 
 
@@ -45,7 +46,7 @@ def get_csv_agg_stats(
         keep_duplicates: bool = True
 ) -> dict:
     """
-    Extract aggregated statistics from a CSV file and return them as a dictionary.
+    Extract aggregated data from agg_col for each groupby_col from a CSV file and return them as a dictionary.
 
     Args:
         filepath (str, optional): The path to the CSV file (default 'data/Corp_Summary.csv').
@@ -57,54 +58,50 @@ def get_csv_agg_stats(
         keep_duplicates (bool, optional): Whether to keep duplicate values in the aggregation (default True).
 
     Return:
-        dict: A dictionary representing the aggregated statistics with groupby values as keys.
+        dict[str, list]: A dictionary representing the aggregated statistics with groupby values as keys.
     """
-    stats = {}
+    stats = defaultdict(list)
 
     try:
         with open(filepath, encoding=encoding) as file:
-            csv_reader = csv.reader(file)
-            # skip header if exists
+            csv_reader = csv.reader(file, delimiter=sep)
             next(csv_reader) if header else None
 
             for row in csv_reader:
-                row_parts = row[0].split(sep)
-                if row_parts[groupby_col] in stats:
-                    if keep_duplicates:
-                        stats[row_parts[groupby_col]].append(row_parts[agg_col])
-                    elif row_parts[agg_col] not in stats[row_parts[groupby_col]]:
-                        stats[row_parts[groupby_col]].append(row_parts[agg_col])
-                else:
-                    stats[row_parts[groupby_col]] = [row_parts[agg_col]]
+                if keep_duplicates:
+                    stats[row[groupby_col]].append(row[agg_col])
+                elif row[agg_col] not in stats[row[groupby_col]]:
+                    stats[row[groupby_col]].append(row[agg_col])
     except Exception as e:
         print(f"An error occurred while processing the file: {str(e)}")
 
     return stats
 
 
-def save_dept_sal_stats_to_csv(
-        dept_sal_stats: dict,
-        output_filepath='data/out_dept_sal_stats.csv'
+def save_dept_stats_to_csv(
+        dept_stats: dict,
+        output_filepath='data/out_dept_stats.csv'
 ) -> None:
     """
     Save department salary statistics to a CSV file.
 
     Args:
-        dept_sal_stats (dict): A dictionary representing the salary statistics for each department.
-        output_filepath (str, optional): The path to the output CSV file (default 'data/out_dept_sal_stats.csv').
+        dept_stats (dict): A dictionary representing the salary statistics for each department.
+        output_filepath (str, optional): The path to the output CSV file (default 'data/out_dept_stats.csv').
     """
     with open(output_filepath, 'w', newline='', encoding='UTF-8') as out_file:
-        fieldnames = ['Department', 'MAX_SAL', 'MIN_SAL', 'AVG_SAL']
+        fieldnames = ['department', 'emp_cnt', 'max_sal', 'min_sal', 'avg_sal']
         writer = csv.DictWriter(out_file, fieldnames=fieldnames)
         writer.writeheader()
 
-        for dept, salaries in dept_sal_stats.items():
-            dept_sal_arr = [int(sal) for sal in salaries]
+        for dept, salaries in dept_stats.items():
+            dept_salaries = [float(sal) for sal in salaries]
             writer.writerow({
-                'Department': dept,
-                'MAX_SAL': max(dept_sal_arr),
-                'MIN_SAL': min(dept_sal_arr),
-                'AVG_SAL': sum(dept_sal_arr) / len(dept_sal_arr)
+                'department': dept,
+                'emp_cnt': len(dept_salaries),
+                'max_sal': max(dept_salaries),
+                'min_sal': min(dept_salaries),
+                'avg_sal': sum(dept_salaries) / len(dept_salaries)
             })
 
 
@@ -126,11 +123,11 @@ if __name__ == '__main__':
             dept_teams_hierarchy = get_csv_agg_stats(groupby_col=1, agg_col=2, keep_duplicates=False)
             print_dept_teams_hierarchy(dept_teams_hierarchy)
         elif choice == '2':
-            dept_sal_stats = get_csv_agg_stats(groupby_col=1, agg_col=5, keep_duplicates=True)
-            print_dept_sal_stats(dept_sal_stats)
+            dept_stats = get_csv_agg_stats(groupby_col=1, agg_col=5, keep_duplicates=True)
+            print_dept_stats(dept_stats)
         elif choice == '3':
-            dept_sal_stats = get_csv_agg_stats(groupby_col=1, agg_col=5, keep_duplicates=True)
-            save_dept_sal_stats_to_csv(dept_sal_stats)
+            dept_stats = get_csv_agg_stats(groupby_col=1, agg_col=5, keep_duplicates=True)
+            save_dept_stats_to_csv(dept_stats)
             print("Summary report successfully saved to a CSV file.")
         elif choice == '4':
             print("Thank you for using the program!")
