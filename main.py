@@ -19,10 +19,10 @@ def print_dept_teams_hierarchy(dept_teams_hierarchy: dict) -> None:
 
 def print_dept_stats(dept_stats: dict) -> None:
     """
-    Print salary statistics for each department from a department-salary statistics dict.
+    Print employees count and salary statistics (avg, max, min) for each department from a department-salary dict.
 
     Args:
-        dept_stats (dict): A dictionary representing the salary statistics for each department.
+        dept_stats (dict): A dictionary representing the salaries for each department.
     """
     print('----Salary stats for each department----')
 
@@ -83,10 +83,10 @@ def save_dept_stats_to_csv(
         output_filepath='data/out_dept_stats.csv'
 ) -> None:
     """
-    Save department salary statistics to a CSV file.
+    Save department employees count and salary statistics to a CSV file.
 
     Args:
-        dept_stats (dict): A dictionary representing the salary statistics for each department.
+        dept_stats (dict): A dictionary representing the salaries for each department.
         output_filepath (str, optional): The path to the output CSV file (default 'data/out_dept_stats.csv').
     """
     with open(output_filepath, 'w', newline='', encoding='UTF-8') as out_file:
