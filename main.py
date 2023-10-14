@@ -8,8 +8,8 @@ def print_dept_teams_hierarchy(dept_teams_hierarchy: dict) -> None:
     dictionary.
 
     Args:
-        dept_teams_hierarchy (dict): A dictionary representing the
-        department-teams hierarchy.
+        dept_teams_hierarchy: A dictionary representing
+          the department-teams hierarchy.
     """
     print('----Department-Teams hierarchy----')
 
